@@ -2,3 +2,4 @@
 *.dvi
 *.aux
 *.out
+eg/*.pdf
