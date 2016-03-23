@@ -8,25 +8,33 @@
 \usepackage{hyperref}
 
 \NewEnviron{sourcefigure}[1][htbp]{%
-  {\let\caption\relax\let\ref\relax
-   \renewcommand{\label}[1]{%
-    \gdef\sfname{sf:##1}}%
-    \setbox1=\hbox{\BODY}}% Capture \label
+    {
+        \let\caption\relax
+        \let\ref\relax
+        \renewcommand{\label}[1]{%
+            \gdef\sfname{sf:##1}
+        }%
+        \setbox1=\hbox{\BODY}
+    }% Capture \label
     %%% NEXT LINE FROM COMMENT by ereg (http://tex.stackexchange.com/users/4427/egreg) on same post
     \global\expandafter\let\csname\sfname\endcsname\BODY
-  \begin{figure}[#1]
-    \BODY
-  \end{figure}
+    \begin{figure}[#1]
+        \BODY
+    \end{figure}
 }
 \newcommand{\reusefigure}[2][htbp]{%
-  {\addtocounter{figure}{-1}%
-   \ifdef{\theHfigure}{
-        \renewcommand{\theHfigure}{dupe-fig}% If you're using hyperref
-   }{}
-   \renewcommand{\thefigure}{\ref{#2}}% Figure counter is \ref
-   \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
-   \renewcommand{\label}[1]{}% Make \label inactive
-   \begin{figure}[#1] \csname sf:#2\endcsname \end{figure}}
+    {
+        \addtocounter{figure}{-1}%
+        \ifdef{\theHfigure}{
+            \renewcommand{\theHfigure}{dupe-fig}% If you're using hyperref
+        }{
+                                                % If you're not using hyperref
+        }
+        \renewcommand{\thefigure}{\ref{#2}}% Figure counter is \ref
+        \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
+        \renewcommand{\label}[1]{}% Make \label inactive
+        \begin{figure}[#1] \csname sf:#2\endcsname \end{figure}
+    }
 }
 
 
