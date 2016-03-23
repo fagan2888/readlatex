@@ -12,7 +12,6 @@
     \gdef\sfname{sf:##1}}%
     \setbox1=\hbox{\BODY}}% Capture \label
     \expandafter\expandafter\expandafter\gdef\expandafter\csname\expandafter\sfname\expandafter\endcsname\expandafter{\BODY}% Capture entire figure
-    \expandafter\show\csname\sfname\endcsname%
   \begin{figure}[#1]
     \BODY
   \end{figure}
