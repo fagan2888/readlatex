@@ -3,6 +3,14 @@
 
 \usepackage[english]{babel}
 \usepackage{graphicx}
+\usepackage{varioref}
+
+\let\oldbeginf\figure
+\let\oldendf\endfigure
+
+\newcounter{indexOfFigure}
+
+\renewcommand*{\endfigure}{\label{marker\theindexOfFigure} \stepcounter{indexOfFigure} \oldendf}
 
 \begin{document}
 
@@ -11,6 +19,10 @@
   \centering
     \includegraphics[width=0.5\textwidth]{gull.jpg}
 \end{figure}
+
+Figure \ref{marker0} shows a gull. Figure \ref{marker1} shows another gull.
+
+\renewcommand*{\figure}[1][]{\oldbeginf[#1]}
 
 \begin{figure}[!ht]
   \centering
@@ -35,5 +47,9 @@
 
 Notice how the tables and figures
 have independent counters.
+
+Renew figure
+
+\vref{marker0}
 
 \end{document}
