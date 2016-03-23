@@ -1,0 +1,46 @@
+%%%
+%%% Document from http://tex.stackexchange.com/questions/225052/using-a-figure-again-in-document
+%%% Work of http://tex.stackexchange.com/users/5764/werner, licensed under https://creativecommons.org/licenses/by-sa/3.0/
+%%%
+\documentclass{article}
+\usepackage{graphicx,environ}
+\usepackage{hyperref}
+
+\NewEnviron{sourcefigure}[1][htbp]{%
+  {\let\caption\relax\let\ref\relax
+   \renewcommand{\label}[1]{%
+    \gdef\sfname{sf:##1}}%
+    \setbox1=\hbox{\BODY}}% Capture \label
+    \expandafter\expandafter\expandafter\gdef\expandafter\csname\expandafter\sfname\expandafter\endcsname\expandafter{\BODY}% Capture entire figure
+    \expandafter\show\csname\sfname\endcsname%
+  \begin{figure}[#1]
+    \BODY
+  \end{figure}
+}
+\newcommand{\reusefigure}[2][htbp]{%
+  {\addtocounter{figure}{-1}%
+   \renewcommand{\theHfigure}{dupe-fig}% If you're using hyperref
+   \renewcommand{\thefigure}{\ref{#2}}% Figure counter is \ref
+   \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
+   \renewcommand{\label}[1]{}% Make \label inactive
+   \begin{figure}[#1] \csname sf:#2\endcsname \end{figure}}
+}
+
+
+\begin{document}
+
+We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
+
+\begin{sourcefigure}[ht]
+  \centering\includegraphics[height=50pt]{example-image-a}
+  \caption{A figure caption}\label{fig:caption-a}
+\end{sourcefigure}
+
+\reusefigure[ht]{fig:caption-a}
+
+\begin{figure}[ht]
+  \centering\includegraphics[height=50pt]{example-image-c}
+  \caption{Another figure}\label{fig:caption-c}
+\end{figure}
+
+\end{document}
