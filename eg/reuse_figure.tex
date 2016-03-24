@@ -12,22 +12,22 @@
 \makeatletter
 
 \let\readlatex@figure@old\figure
-\let\readlatex@endfigure@old\endfigure
+\let\endreadlatex@figure@old\endfigure
 
 \RenewEnviron{figure}[1][htbp]{%
     {
         \let\caption\relax
         \let\ref\relax
         \renewcommand{\label}[1]{%
-            \gdef\sfname{sf:##1}
+            \gdef\sfname{readlatex@savedfigcontent:##1}
         }%
         \setbox1=\hbox{\BODY}
     }% Capture \label
     %%% NEXT LINE FROM COMMENT by ereg (http://tex.stackexchange.com/users/4427/egreg) on same post
     \global\expandafter\let\csname\sfname\endcsname\BODY
-    \readlatex@figure@old[#1]
+    \begin{readlatex@figure@old}[#1]
         \BODY
-    \readlatex@endfigure@old
+    \end{readlatex@figure@old}
 }
 
 \newcommand{\reusefigure}[2][htbp]{%
@@ -41,7 +41,9 @@
         \renewcommand{\thefigure}{\old@ref{#2}}% Figure counter is \ref
         \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
         \renewcommand{\label}[1]{}% Make \label inactive
-        \readlatex@figure@old[#1] \csname sf:#2\endcsname \readlatex@endfigure@old
+        \begin{readlatex@figure@old}[#1]
+            \csname readlatex@savedfigcontent:#2\endcsname
+        \end{readlatex@figure@old}
     }
 }
 
