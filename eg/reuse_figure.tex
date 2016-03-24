@@ -8,6 +8,7 @@
 \usepackage{hyperref}
 \usepackage{newfile}
 \usepackage{zref-savepos}
+\usepackage{calc}
 
 \makeatletter
 
@@ -25,9 +26,13 @@
     }% Capture \label
     %%% NEXT LINE FROM COMMENT by ereg (http://tex.stackexchange.com/users/4427/egreg) on same post
     \global\expandafter\let\csname\sfname\endcsname\BODY
-    \begin{readlatex@figure@old}[#1]
-        \BODY
-    \end{readlatex@figure@old}
+    \def\readlatex@thefigure{
+        \begin{readlatex@figure@old}[#1]
+            \BODY
+        \end{readlatex@figure@old}
+    }
+    \readlatex@thefigure
+    \global\expandafter\let\csname\sfname:height\endcsname\heightof{\readlatex@thefigure}
 }
 
 \newcommand{\reusefigure}[2][htbp]{%
@@ -35,9 +40,7 @@
         \addtocounter{figure}{-1}%
         \ifdef{\theHfigure}{
             \renewcommand{\theHfigure}{dupe-fig}% If you're using hyperref
-        }{
-                                                % If you're not using hyperref
-        }
+        }{}
         \renewcommand{\thefigure}{\old@ref{#2}}% Figure counter is \ref
         \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
         \renewcommand{\label}[1]{}% Make \label inactive
@@ -72,6 +75,7 @@
         \edef\readlatex@curpos{\readlatex@ypos@value}
         \readlatex@curpos
         \addtostream{read@latex}{\readlatex@curpos}
+        \addtostream{read@latex}{\csuse{readlatex@savedfigcontent:##1:height}}
     }
 }
 \makeatother
