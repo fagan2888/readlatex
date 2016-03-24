@@ -6,6 +6,8 @@
 \usepackage{etoolbox}
 \usepackage{graphicx,environ}
 \usepackage{hyperref}
+\usepackage{newfile}
+\usepackage{zref-savepos}
 
 \NewEnviron{sourcefigure}[1][htbp]{%
     {
@@ -22,6 +24,9 @@
         \BODY
     \end{figure}
 }
+
+\makeatletter
+
 \newcommand{\reusefigure}[2][htbp]{%
     {
         \addtocounter{figure}{-1}%
@@ -30,12 +35,41 @@
         }{
                                                 % If you're not using hyperref
         }
-        \renewcommand{\thefigure}{\ref{#2}}% Figure counter is \ref
+        \renewcommand{\thefigure}{\old@ref{#2}}% Figure counter is \ref
         \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
         \renewcommand{\label}[1]{}% Make \label inactive
         \begin{figure}[#1] \csname sf:#2\endcsname \end{figure}
     }
 }
+
+\newcounter{readlatex@ypos@callcount}
+
+\newcommand{\readlatex@ypos@setup}{
+    \addtocounter{readlatex@ypos@callcount}{1}
+    \zsavepos{\thereadlatex@ypos@callcount}
+}
+
+\newcommand{\readlatex@ypos@value}{\the\dimexpr\zposy{\thereadlatex@ypos@callcount}sp\relax}
+
+\newcommand{\readlatex@ypos}{\readlatex@ypos@setup\readlatex@ypos@value}
+
+\newoutputstream{read@latex}
+\openoutputfile{\jobname.readlatex}{read@latex}
+
+\AtEndDocument{\closeoutputstream{read@latex}}
+
+\AtBeginDocument{
+    \let\old@ref\ref
+    \renewcommand*{\ref}[1]{
+        \old@ref{#1}
+        \addtostream{read@latex}{#1}
+        \readlatex@ypos@setup
+        \edef\readlatex@curpos{\readlatex@ypos@value}
+        \readlatex@curpos
+        \addtostream{read@latex}{\readlatex@curpos}
+    }
+}
+\makeatother
 
 
 \begin{document}
@@ -53,5 +87,17 @@ We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
   \centering\includegraphics[height=50pt]{example-image-c}
   \caption{Another figure}\label{fig:caption-c}
 \end{figure}
+
+We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
+
+\makeatletter
+
+\readlatex@ypos
+
+\readlatex@ypos
+
+\readlatex@ypos
+
+\readlatex@ypos
 
 \end{document}
