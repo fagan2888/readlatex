@@ -9,7 +9,14 @@
 \usepackage{newfile}
 \usepackage{zref-savepos}
 
-\NewEnviron{sourcefigure}[1][htbp]{%
+\makeatletter
+
+\let\readlatex@figure@old\figure
+\let\figure\@undefined
+\let\readlatex@endfigure@old\endfigure
+\let\endfigure\@undefined
+
+\NewEnviron{figure}[1][htbp]{%
     {
         \let\caption\relax
         \let\ref\relax
@@ -20,12 +27,10 @@
     }% Capture \label
     %%% NEXT LINE FROM COMMENT by ereg (http://tex.stackexchange.com/users/4427/egreg) on same post
     \global\expandafter\let\csname\sfname\endcsname\BODY
-    \begin{figure}[#1]
+    \readlatex@figure@old[#1]
         \BODY
-    \end{figure}
+    \readlatex@endfigure@old
 }
-
-\makeatletter
 
 \newcommand{\reusefigure}[2][htbp]{%
     {
@@ -38,7 +43,7 @@
         \renewcommand{\thefigure}{\old@ref{#2}}% Figure counter is \ref
         \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
         \renewcommand{\label}[1]{}% Make \label inactive
-        \begin{figure}[#1] \csname sf:#2\endcsname \end{figure}
+        \readlatex@figure@old[#1] \csname sf:#2\endcsname \readlatex@endfigure@old
     }
 }
 
@@ -76,10 +81,10 @@
 
 We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
 
-\begin{sourcefigure}[ht]
+\begin{figure}[ht]
   \centering\includegraphics[height=50pt]{example-image-a}
   \caption{A figure caption}\label{fig:caption-a}
-\end{sourcefigure}
+\end{figure}
 
 \reusefigure[ht]{fig:caption-a}
 
