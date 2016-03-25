@@ -11,6 +11,10 @@
 
 \makeatletter
 
+\newif\ifreadlatex@getimageheights@
+
+\readlatex@getimageheights@true
+
 \let\readlatex@figure@old\figure
 \let\endreadlatex@figure@old\endfigure
 
@@ -28,6 +32,21 @@
     \begin{readlatex@figure@old}[#1]
         \BODY
     \end{readlatex@figure@old}
+    \ifreadlatex@getimageheights@
+        \clearpage
+        
+        \edef\readlatex@topoffigure{\the\pagetotal}
+        
+        
+        \begin{readlatex@figure@old}[h!]
+           \BODY
+        \end{readlatex@figure@old}
+        
+        \addtostream{readlatex@stream@heights}{\sfname}
+        \addtostream{readlatex@stream@heights}{\readlatex@topoffigure}
+        \addtostream{readlatex@stream@heights}{\the\pagetotal}
+        \clearpage
+    \fi
 }
 
 \newcommand{\reusefigure}[2][htbp]{%
@@ -58,20 +77,26 @@
 
 \newcommand{\readlatex@ypos}{\readlatex@ypos@setup\readlatex@ypos@value}
 
-\newoutputstream{read@latex}
-\openoutputfile{\jobname.readlatex}{read@latex}
 
-\AtEndDocument{\closeoutputstream{read@latex}}
+\ifreadlatex@getimageheights@
+    \newoutputstream{readlatex@stream@heights}
+    \openoutputfile{\jobname.readlatex_heights}{readlatex@stream@heights}
+    \AtEndDocument{\closeoutputstream{readlatex@stream@heights}}
+\fi
+
+\newoutputstream{readlatex@stream@locations}
+\openoutputfile{\jobname.readlatex_locations}{readlatex@stream@locations}
+\AtEndDocument{\closeoutputstream{readlatex@stream@locations}}
 
 \AtBeginDocument{
     \let\old@ref\ref
     \renewcommand*{\ref}[1]{
         \old@ref{#1}
-        \addtostream{read@latex}{#1}
+        \addtostream{readlatex@stream@locations}{#1}
         \readlatex@ypos@setup
         \edef\readlatex@curpos{\readlatex@ypos@value}
         \readlatex@curpos
-        \addtostream{read@latex}{\readlatex@curpos}
+        \addtostream{readlatex@stream@locations}{\readlatex@curpos}
     }
 }
 \makeatother
