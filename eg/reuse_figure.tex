@@ -13,7 +13,9 @@
 
 \newif\ifreadlatex@getimageheights@
 
-\readlatex@getimageheights@true
+%%%%%% SET TO TRUE TO OUTPUT IMAGE HEIGHTS
+%%%%%% SET TO FALSE TO PRODUCE CORRECT OUTPUT
+\readlatex@getimageheights@false
 
 \let\readlatex@figure@old\figure
 \let\endreadlatex@figure@old\endfigure
@@ -93,6 +95,7 @@
     \renewcommand*{\ref}[1]{
         \old@ref{#1}
         \addtostream{readlatex@stream@locations}{#1}
+        \addtostream{readlatex@stream@locations}{\thepage}
         \readlatex@ypos@setup
         \edef\readlatex@curpos{\readlatex@ypos@value}
         \readlatex@curpos
@@ -118,6 +121,9 @@ We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
   \caption{Another figure}\label{fig:caption-c}
 \end{figure}
 
+We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
+
+\pagebreak
 We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
 
 \makeatletter
