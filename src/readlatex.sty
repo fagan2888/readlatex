@@ -27,9 +27,8 @@
 \let\readlatex@figure@old\figure
 \let\endreadlatex@figure@old\endfigure
 
-
-
 \RenewEnviron{figure}[1][htbp]{%
+    \let\sfname\@undefined
     {
         \let\caption\relax
         \let\ref\relax
@@ -38,26 +37,28 @@
         }%
         \setbox1=\hbox{\BODY}
     }% Capture \label
-    %%% NEXT LINE FROM COMMENT by ereg (http://tex.stackexchange.com/users/4427/egreg) on same post
-    \global\expandafter\let\csname\sfname\endcsname\BODY
-    \begin{readlatex@figure@old}[#1]
-        \BODY
-    \end{readlatex@figure@old}
-    \ifreadlatex@getimageheights@
-        \clearpage
-        
-        \edef\readlatex@topoffigure{\the\pagetotal}
-        
-        
-        \begin{readlatex@figure@old}[h!]
-           \BODY
+    \@ifundefined{sfname}{}{
+        %%% NEXT LINE FROM COMMENT by ereg (http://tex.stackexchange.com/users/4427/egreg) on same post
+        \global\expandafter\let\csname\sfname\endcsname\BODY
+        \begin{readlatex@figure@old}[#1]
+            \BODY
         \end{readlatex@figure@old}
-        
-        \addtostream{readlatex@stream@heights}{\sfname}
-        \addtostream{readlatex@stream@heights}{\readlatex@topoffigure}
-        \addtostream{readlatex@stream@heights}{\the\pagetotal}
-        \clearpage
-    \fi
+        \ifreadlatex@getimageheights@
+            \clearpage
+            
+            \edef\readlatex@topoffigure{\the\pagetotal}
+            
+            
+            \begin{readlatex@figure@old}[h!]
+               \BODY
+            \end{readlatex@figure@old}
+            
+            \addtostream{readlatex@stream@heights}{\sfname}
+            \addtostream{readlatex@stream@heights}{\readlatex@topoffigure}
+            \addtostream{readlatex@stream@heights}{\the\pagetotal}
+            \clearpage
+        \fi
+    }
 }
 
 \newcommand{\reusefigure}[2][htbp]{%
