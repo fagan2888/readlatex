@@ -6,20 +6,28 @@
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
 \ProvidesPackage{readlatex}
 
+\makeatletter
+
+\newif\ifreadlatex@getimageheights@
+
+\readlatex@getimageheights@false
+
+\DeclareOption{get}{\readlatex@getimageheights@true}
+\ProcessOptions\relax
+
+
+\makeatother
+
 \RequirePackage{environ}
 \RequirePackage{zref-savepos}
 \RequirePackage{newfile}
 
 \makeatletter
 
-\newif\ifreadlatex@getimageheights@
-
-%%%%%% SET TO TRUE TO OUTPUT IMAGE HEIGHTS
-%%%%%% SET TO FALSE TO PRODUCE CORRECT OUTPUT
-\readlatex@getimageheights@false
-
 \let\readlatex@figure@old\figure
 \let\endreadlatex@figure@old\endfigure
+
+
 
 \RenewEnviron{figure}[1][htbp]{%
     {
