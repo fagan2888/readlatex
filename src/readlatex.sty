@@ -1,5 +1,99 @@
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
 \ProvidesPackage{readlatex}
 
+\makeatletter
+
+\newif\ifreadlatex@getimageheights@
+
+%%%%%% SET TO TRUE TO OUTPUT IMAGE HEIGHTS
+%%%%%% SET TO FALSE TO PRODUCE CORRECT OUTPUT
+\readlatex@getimageheights@false
+
+\let\readlatex@figure@old\figure
+\let\endreadlatex@figure@old\endfigure
+
+\RenewEnviron{figure}[1][htbp]{%
+    {
+        \let\caption\relax
+        \let\ref\relax
+        \renewcommand{\label}[1]{%
+            \gdef\sfname{readlatex@savedfigcontent:##1}
+        }%
+        \setbox1=\hbox{\BODY}
+    }% Capture \label
+    %%% NEXT LINE FROM COMMENT by ereg (http://tex.stackexchange.com/users/4427/egreg) on same post
+    \global\expandafter\let\csname\sfname\endcsname\BODY
+    \begin{readlatex@figure@old}[#1]
+        \BODY
+    \end{readlatex@figure@old}
+    \ifreadlatex@getimageheights@
+        \clearpage
+        
+        \edef\readlatex@topoffigure{\the\pagetotal}
+        
+        
+        \begin{readlatex@figure@old}[h!]
+           \BODY
+        \end{readlatex@figure@old}
+        
+        \addtostream{readlatex@stream@heights}{\sfname}
+        \addtostream{readlatex@stream@heights}{\readlatex@topoffigure}
+        \addtostream{readlatex@stream@heights}{\the\pagetotal}
+        \clearpage
+    \fi
+}
+
+\newcommand{\reusefigure}[2][htbp]{%
+    {
+        \addtocounter{figure}{-1}%
+        \ifdef{\theHfigure}{
+            \renewcommand{\theHfigure}{dupe-fig}% If you're using hyperref
+        }{
+                                                % If you're not using hyperref
+        }
+        \renewcommand{\thefigure}{\old@ref{#2}}% Figure counter is \ref
+        \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
+        \renewcommand{\label}[1]{}% Make \label inactive
+        \begin{readlatex@figure@old}[#1]
+            \csname readlatex@savedfigcontent:#2\endcsname
+        \end{readlatex@figure@old}
+    }
+}
+
+\newcounter{readlatex@ypos@callcount}
+
+\newcommand{\readlatex@ypos@setup}{
+    \addtocounter{readlatex@ypos@callcount}{1}
+    \zsavepos{\thereadlatex@ypos@callcount}
+}
+
+\newcommand{\readlatex@ypos@value}{\the\dimexpr\zposy{\thereadlatex@ypos@callcount}sp\relax}
+
+\newcommand{\readlatex@ypos}{\readlatex@ypos@setup\readlatex@ypos@value}
+
+
+\ifreadlatex@getimageheights@
+    \newoutputstream{readlatex@stream@heights}
+    \openoutputfile{\jobname.readlatex_heights}{readlatex@stream@heights}
+    \AtEndDocument{\closeoutputstream{readlatex@stream@heights}}
+\fi
+
+\newoutputstream{readlatex@stream@locations}
+\openoutputfile{\jobname.readlatex_locations}{readlatex@stream@locations}
+\AtEndDocument{\closeoutputstream{readlatex@stream@locations}}
+
+\AtBeginDocument{
+    \let\old@ref\ref
+    \renewcommand*{\ref}[1]{
+        \old@ref{#1}
+        \addtostream{readlatex@stream@locations}{#1}
+        \addtostream{readlatex@stream@locations}{\thepage}
+        \readlatex@ypos@setup
+        \edef\readlatex@curpos{\readlatex@ypos@value}
+        \readlatex@curpos
+        \addtostream{readlatex@stream@locations}{\readlatex@curpos}
+    }
+}
+\makeatother
 
 \endinput
