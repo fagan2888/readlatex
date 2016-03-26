@@ -71,10 +71,7 @@
 
 \newcounter{readlatex@ypos@callcount}
 
-\newcommand{\readlatex@ypos@setup}{
-    \addtocounter{readlatex@ypos@callcount}{1}
-    \zsavepos{\thereadlatex@ypos@callcount}
-}
+\newcommand{\readlatex@ypos@setup}{\addtocounter{readlatex@ypos@callcount}{1}\zsavepos{\thereadlatex@ypos@callcount}}
 
 \newcommand{\readlatex@ypos@value}{\the\dimexpr\zposy{\thereadlatex@ypos@callcount}sp\relax}
 
@@ -93,15 +90,7 @@
 
 \AtBeginDocument{
     \let\old@ref\ref
-    \renewcommand*{\ref}[1]{
-        \old@ref{#1}
-        \addtostream{readlatex@stream@locations}{#1}
-        \addtostream{readlatex@stream@locations}{\thepage}
-        \readlatex@ypos@setup
-        \edef\readlatex@curpos{\readlatex@ypos@value}
-        \readlatex@curpos
-        \addtostream{readlatex@stream@locations}{\readlatex@curpos}
-    }
+    \renewcommand{\ref}[1]{\old@ref{#1}\addtostream{readlatex@stream@locations}{#1}\addtostream{readlatex@stream@locations}{\thepage}\readlatex@ypos@setup\addtostream{readlatex@stream@locations}{\readlatex@ypos@value}}
 }
 \makeatother
 
