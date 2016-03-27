@@ -43,8 +43,6 @@
         \begin{readlatex@figure@old}[#1]
             \BODY
         \end{readlatex@figure@old}
-        \xdef\thisfloat{\the\csname @currbox\endcsname}%
-        \def\csname\sfname:ht\endcsname{\the\dimexpr\ht\thisfloat+\dp\thisfloat\relax}
         \ifreadlatex@getimageheights@
             \clearpage
             
@@ -101,7 +99,7 @@
 
 \AtBeginDocument{
     \let\old@ref\ref
-    \renewcommand{\ref}[1]{\old@ref{#1}\addtostream{readlatex@stream@locations}{#1}\addtostream{readlatex@stream@locations}{\thepage}\readlatex@ypos@setup\addtostream{readlatex@stream@locations}{\readlatex@ypos@value}\addtostream{readlatex@stream@locations}{\csname #1:ht\endcsname}}
+    \renewcommand{\ref}[1]{\old@ref{#1}\addtostream{readlatex@stream@locations}{#1}\addtostream{readlatex@stream@locations}{\thepage}\readlatex@ypos@setup\addtostream{readlatex@stream@locations}{\readlatex@ypos@value}}
 }
 \makeatother
 
