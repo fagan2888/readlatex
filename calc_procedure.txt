@@ -1,0 +1,34 @@
+We can start by removing anything whose sum would be greater than the height.
+    We can calculate the following function of each reference as
+        The product of
+            The height of the referred figure
+            The sum of
+                1 / a coefficient representing how important nonduplication is
+                for all other refs
+                    if refer to the same figure:
+                        1 / distance to figure
+                    otherwise:
+                        constant representing how tog et rid of bunchiness / distance to figure
+    Then we remove the maximum figure until sum(height) < height of page
+
+We then order them by 
+
+
+Knowns:
+    refrences to figures (the numbers represent )
+        r_1, r_2, ... r_b :: N[1,a]
+
+    property:
+        {r1, r2, ... r_b} = {1, 2, ... a}
+        Note, set equality. So not necessarily the same order, and a not necessarily =b
+    reference locations (correspond to references)
+        y_0, y_1, ... y_b :: R
+
+Desired output
+    set of figure locations
+        z_1, z_2, ... z_b
+
+Constraints:
+    forall k in [2, b]
+        z_k > z_(k-1)
+        z_k - z_(k-1) > (h_k + h_(k-1)) / 2
