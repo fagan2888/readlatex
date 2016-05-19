@@ -3,15 +3,15 @@ We can start by removing anything whose sum would be greater than the height.
         The product of
             The height of the referred figure
             The sum of
-                1 / a coefficient representing how important nonduplication is
+                a penalty for larger images
                 for all other refs
                     if refer to the same figure:
-                        1 / distance to figure
+                        (a penalty for duplicates + 1) / (distance to figure + 1)        ;; Avoid div/0
                     otherwise:
-                        constant representing how tog et rid of bunchiness / distance to figure
+                        1 / (distance to figure + 1) ;; avoid div/0
     Then we remove the maximum figure until sum(height) < height of page
 
-We then order them by 
+We then order them by
 
 
 Knowns:
