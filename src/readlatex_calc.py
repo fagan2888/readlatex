@@ -44,9 +44,10 @@ class Reference:
         return repr(self.__dict__)
 
 class Page:
-    def __init__(self, pagenumber):
+    def __init__(self, pagenumber, height):
         self.__refs = []
         self.__pagenumber = pagenumber
+        self.__height = height
 
     def resolve(self, figs):
         pass
@@ -64,13 +65,13 @@ class Page:
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
-def get_pages(path):
+def get_pages(locations, page_height):
     pages = {}
     index = 0
-    for name, page, loc in read_by_ns(3, path):
+    for name, page, loc in read_by_ns(3, locations):
         page = int(page)
         if page not in pages:
-            pages[page] = Page(page)
+            pages[page] = Page(page, page_height)
         pages[page].add(name, index, latex_pt_to_float(loc))
         index += 1
     return pages

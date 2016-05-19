@@ -6,4 +6,5 @@ eg/*.pdf
 /out
 *.readlatex_heights
 *.readlatex_locations
+*.readlatex_pageheight
 **/__pycache__

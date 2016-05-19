@@ -101,6 +101,14 @@
 \openoutputfile{\jobname.readlatex_locations}{readlatex@stream@locations}
 \AtEndDocument{\closeoutputstream{readlatex@stream@locations}}
 
+{
+    % Writes height of pages in this document to the file .readlatex_pageheight
+    \newoutputstream{readlatex@stream@paperheight}
+    \openoutputfile{\jobname.readlatex_pageheight}{readlatex@stream@paperheight}
+    \addtostream{readlatex@stream@paperheight}{\the\paperheight}
+    \closeoutputstream{readlatex@stream@paperheight}
+}
+
 \AtBeginDocument{
     \let\old@ref\ref
     \renewcommand{\ref}[1]{\old@ref{#1}\addtostream{readlatex@stream@locations}{#1}\addtostream{readlatex@stream@locations}{\thepage}\readlatex@ypos@setup\addtostream{readlatex@stream@locations}{\readlatex@ypos@value}}
