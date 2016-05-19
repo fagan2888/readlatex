@@ -37,7 +37,11 @@
         }%
         \setbox1=\hbox{\BODY}
     }% Capture \label
-    \@ifundefined{sfname}{}{
+    \@ifundefined{sfname}{
+        \begin{readlatex@figure@old}[#1]
+            \BODY
+        \end{readlatex@figure@old}
+    }{
         %%% NEXT LINE FROM COMMENT by ereg (http://tex.stackexchange.com/users/4427/egreg) on same post
         \global\expandafter\let\csname\sfname\endcsname\BODY
         \begin{readlatex@figure@old}[#1]
