@@ -6,29 +6,27 @@ We can start by removing anything whose sum would be greater than the height.
                 a penalty for larger images
                 for all other refs
                     if refer to the same figure:
-                        (a penalty for duplicates + 1) / (distance to figure + 1)        ;; Avoid div/0
+                        (a penalty for duplicates + 1) / (distance to figure + 1)           ; Avoid div/0
                     otherwise:
-                        1 / (distance to figure + 1) ;; avoid div/0
+                        1 / (distance to figure + 1)                                        ; avoid div/0
     Then we remove the maximum figure until sum(height) < height of page
 
-We then order them by
-
-
-Knowns:
-    refrences to figures (the numbers represent )
-        r_1, r_2, ... r_b :: N[1,a]
-
-    property:
-        {r1, r2, ... r_b} = {1, 2, ... a}
-        Note, set equality. So not necessarily the same order, and a not necessarily =b
-    reference locations (correspond to references)
-        y_0, y_1, ... y_b :: R
-
-Desired output
-    set of figure locations
-        z_1, z_2, ... z_b
-
-Constraints:
-    forall k in [2, b]
-        z_k > z_(k-1)
-        z_k - z_(k-1) > (h_k + h_(k-1)) / 2
+Then, we lay each of the figures out evenly across the entire space as follows:
+    Calculate total gap := height - sum of ref heights
+    Calculate gap := total gap / (n + 1) ;; For n figures there are n + 1 gaps.
+    We can define
+        y_0 := gap ; starts at the gap
+        y_n = y_(n-1) + gap + h_(n-1)
+            where h_n is the height of the nth item
+    And then add h_n / 2 to each y_n                                                        ; each y means middle not top
+    For some number of steps
+        Define the possible movement of some reference to be:
+            Find the direction := in which y(i) would travel to be closer to ref(i).pos as -1 or 1
+            Find the size of the gap in that direction:
+                the total distance := y(i + direction) - y(this)
+                subtract h(i) / 2 + h(i + direction) / 2
+            Multiply the gap by the gap ratio
+            If it overshoots the target, set it to the target
+        Calculate the possible movements of all the references.
+        Find the one with the maximum absolute value.
+        Move that picture by that amount.
