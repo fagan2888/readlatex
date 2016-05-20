@@ -6,28 +6,25 @@
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
 \ProvidesPackage{readlatex}
 
-\makeatletter
-
 \newif\ifreadlatex@getimageheights@
 
 \readlatex@getimageheights@false
 
+% If option get is passed, get image heights and put them in a file.
 \DeclareOption{get}{\readlatex@getimageheights@true}
 \ProcessOptions\relax
 
+\RequirePackage{environ} % to mess with environments
+\RequirePackage{zref-savepos} % to save the position (useful in measuring the height of a figure)
+\RequirePackage{newfile} % to create new files
 
-\makeatother
-
-\RequirePackage{environ}
-\RequirePackage{zref-savepos}
-\RequirePackage{newfile}
-
-\makeatletter
-
+% save the old figure, endfigure
 \let\readlatex@figure@old\figure
 \let\endreadlatex@figure@old\endfigure
 
+%redefine figure
 \RenewEnviron{figure}[1][htbp]{%
+    %sfname === handle with which to refer to the figure later
     \let\sfname\@undefined
     {
         \let\caption\relax
@@ -38,25 +35,29 @@
         \setbox1=\hbox{\BODY}
     }% Capture \label
     \@ifundefined{sfname}{
+        % No label was detected. No need to mantain references
         \begin{readlatex@figure@old}[#1]
             \BODY
         \end{readlatex@figure@old}
     }{
         %%% NEXT LINE FROM COMMENT by ereg (http://tex.stackexchange.com/users/4427/egreg) on same post
+        %% Caches the value of \BODY, i.e., the body of the file, in a macro named after than handle.
         \global\expandafter\let\csname\sfname\endcsname\BODY
         \begin{readlatex@figure@old}[#1]
             \BODY
         \end{readlatex@figure@old}
         \ifreadlatex@getimageheights@
+            % Immediately clear the page
             \clearpage
-
+            % Cache the current position at the of the figure
             \edef\readlatex@topoffigure{\the\pagetotal}
 
-
+            % Write the figure onto the screen
             \begin{readlatex@figure@old}[h!]
                \BODY
             \end{readlatex@figure@old}
 
+            % Write the relevant parameters to file
             \addtostream{readlatex@stream@heights}{\sfname}
             \addtostream{readlatex@stream@heights}{\readlatex@topoffigure}
             \addtostream{readlatex@stream@heights}{\the\pagetotal}
@@ -82,21 +83,29 @@
     }
 }
 
+% Keeps track of current number of calls to ypos
 \newcounter{readlatex@ypos@callcount}
 
-\newcommand{\readlatex@ypos@setup}{\addtocounter{readlatex@ypos@callcount}{1}\zsavepos{\thereadlatex@ypos@callcount}}
+\newcommand{\readlatex@ypos@setup}{%
+    \addtocounter{readlatex@ypos@callcount}{1}%
+    \zsavepos{\thereadlatex@ypos@callcount}%
+}
 
-\newcommand{\readlatex@ypos@value}{\the\dimexpr\zposy{\thereadlatex@ypos@callcount}sp\relax}
+\newcommand{\readlatex@ypos@value}{%
+    \the\dimexpr\zposy{\thereadlatex@ypos@callcount}sp\relax%
+}
 
 \newcommand{\readlatex@ypos}{\readlatex@ypos@setup\readlatex@ypos@value}
 
 
 \ifreadlatex@getimageheights@
+    % open stream to deal with figure heights
     \newoutputstream{readlatex@stream@heights}
     \openoutputfile{\jobname.readlatex_heights}{readlatex@stream@heights}
     \AtEndDocument{\closeoutputstream{readlatex@stream@heights}}
 \fi
 
+% Open stream to deal with image locations
 \newoutputstream{readlatex@stream@locations}
 \openoutputfile{\jobname.readlatex_locations}{readlatex@stream@locations}
 \AtEndDocument{\closeoutputstream{readlatex@stream@locations}}
@@ -111,8 +120,13 @@
 
 \AtBeginDocument{
     \let\old@ref\ref
-    \renewcommand{\ref}[1]{\old@ref{#1}\addtostream{readlatex@stream@locations}{#1}\addtostream{readlatex@stream@locations}{\thepage}\readlatex@ypos@setup\addtostream{readlatex@stream@locations}{\readlatex@ypos@value}}
+    \renewcommand{\ref}[1]{%
+        \old@ref{#1}%
+        \addtostream{readlatex@stream@locations}{#1}%
+        \addtostream{readlatex@stream@locations}{\thepage}%
+        \readlatex@ypos@setup%
+        \addtostream{readlatex@stream@locations}{\readlatex@ypos@value}%
+    }
 }
-\makeatother
 
 \endinput
