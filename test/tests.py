@@ -7,6 +7,7 @@ sys.path.append("src")
 from readlatex_calc import *
 import unittest
 from readlatex_params import *
+from readlatex_engine import *
 
 class TestLib(unittest.TestCase):
     def assertAlmostEqual(self, a, b, places=7):

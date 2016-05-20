@@ -1,34 +1,18 @@
 
-def positioning(path):
-    figs = Figures.read(heights_path(path))
-    pages = get_pages(locations_path(path))
-    resolved = []
-    for page in pages:
-        resolved.append(page.resolve(figs))
-    write_fig_positions(resolved)
+from readlatex_math import *
 
 class Figure:
     def __init__(self, name, height):
         self.__name = name
         self.__height = height
+
     @property
     def height(self):
         return self.__height
 
 class Figures:
-    def get(path):
-        figures = {}
-        for name, y0, yf in read_by_ns(3, path):
-            name = name.strip("readlatex@savedfigcontent:")
-            y = latex_pt_to_float(yf) - latex_pt_to_float(y0)
-            figures[name] = Figure(name, y)
-        return Figures(figures)
-
     def __init__(self, figures):
         self.__figures = figures
-
-    def filter(pred):
-        return Figures({k:v for k, v in self.__figures.items() if pred(k)})
 
     def fig_height(self, ref):
         return self.__figures[ref.label].height
@@ -50,6 +34,7 @@ class Reference:
         if self.__position != other.__position:
             return self.__position < other.__position
         return self.__index < other.__index
+
     def __repr__(self):
         return repr(self.__dict__)
 
@@ -124,6 +109,9 @@ class Page:
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
+    def __iter__(self):
+        return iter(refs)
+
 class PageResolver:
     def __init__(self, params, height, refs, figs):
         self.params = params
@@ -176,26 +164,3 @@ class PageResolver:
         if i == -1 or i == self.n:
             return 0
         return self.figs.fig_height(self.refs[i])
-
-
-def get_pages(params, locations, page_height):
-    pages = {}
-    index = 0
-    for name, page, loc in read_by_ns(3, locations):
-        page = int(page)
-        if page not in pages:
-            pages[page] = Page(params, page, page_height)
-        pages[page].add(name, index, latex_pt_to_float(loc))
-        index += 1
-    return pages
-
-def read_by_ns(n, path):
-    with open(path) as f:
-        lines = [line.strip("\n") for line in f.readlines()]
-        if len(lines) % n != 0:
-            raise RuntimeError("Bad format for the heights file %r; length should be divisible by 3" % path)
-        for i in range(len(lines) // n):
-            yield tuple(lines[i * n : (i + 1) * n])
-
-def latex_pt_to_float(val):
-    return float(val.strip("pt"))
