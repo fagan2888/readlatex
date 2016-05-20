@@ -92,27 +92,9 @@ class Page:
     def resolve(self, figs):
         self.remove_extras(figs)
         resolver = self.__resolver(figs)
-
-        def potential_movement(i):
-            from math import copysign
-            delta = resolver.y(i) - resolver.pos(i)
-            if delta > 0: # is too high, should be lower
-                direction = -1
-            else:
-                direction = 1
-            distance = resolver.y(i + direction) - resolver.y(i)
-            figures_space = resolver.h(i) / 2 + resolver.h(i + direction) / 2
-            gapsize = copysign(abs(distance) - figures_space, distance)
-            gapsize *= self.__params.resolution_narrowing
-            if abs(gapsize) > abs(delta):
-                # ensure that we don't overshoot
-                gapsize = delta
-            return gapsize
         for _ in range(self.__params.resolution_iterations):
-            best_i = max(range(resolver.n), key=lambda i: abs(potential_movement(i)) / abs(resolver.y(i) - resolver.pos(i)))
-            resolver.ys[best_i] += potential_movement(best_i)
-        for i in range(resolver.n):
-            self.__refs[i].position = resolver.ys[i]
+            resolver.iterate()
+        self.__apply(resolver)
 
     def remove_extras(self, figs):
         refs_with_removability = sorted(self.__refs, key=lambda ref: ref.removability(figs, self.__refs))
@@ -123,7 +105,11 @@ class Page:
         self.__refs = sorted(refs_with_removability)
 
     def __resolver(self, figs):
-        return PageResolver(self.__height, self.__refs, figs)
+        return PageResolver(self.__params, self.__height, self.__refs, figs)
+
+    def __apply(self, resolver):
+        for i in range(resolver.n):
+            self.__refs[i].position = resolver.ys[i]
 
     def add(self, label, index, position):
         if not isinstance(position, float):
@@ -139,7 +125,8 @@ class Page:
         return self.__dict__ == other.__dict__
 
 class PageResolver:
-    def __init__(self, height, refs, figs):
+    def __init__(self, params, height, refs, figs):
+        self.params = params
         self.refs = refs
         self.height = height
         self.n = len(refs)
@@ -154,6 +141,26 @@ class PageResolver:
             self.ys.append(self.y(i - 1) + self.gap + self.h(i-1))
         for i in range(self.n):
             self.ys[i] += self.h(i) / 2
+
+    def iterate(self):
+        def mobile_proportion(i):
+            """the proportion that the reference at i can move"""
+            return abs(self.potential_movement(i)) / abs(self.y(i) - self.pos(i))
+        best_i = max(range(self.n), key=mobile_proportion)
+        self.ys[best_i] += self.potential_movement(best_i)
+
+    def potential_movement(self, i):
+        from math import copysign
+        delta = self.y(i) - self.pos(i)
+        direction = -int(copysign(1, delta)) # negative because we want to go the other way
+        distance = self.y(i + direction) - self.y(i)
+        amount_of_space_figures_take = self.h(i) / 2 + self.h(i + direction) / 2
+        gapsize = copysign(abs(distance) - amount_of_space_figures_take, distance)
+        gapsize *= self.params.resolution_narrowing
+        if abs(gapsize) > abs(delta):
+            # ensure that we don't overshoot
+            gapsize = delta
+        return gapsize
 
     def y(self, i):
         if i == -1:
