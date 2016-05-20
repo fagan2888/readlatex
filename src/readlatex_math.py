@@ -8,4 +8,6 @@ def read_by_ns(n, path):
             yield tuple(lines[i * n : (i + 1) * n])
 
 def latex_pt_to_float(val):
-    return float(val.strip("pt"))
+    if val.endswith("pt"):
+        return float(val[:-len("pt")])
+    raise AssertionError("Not a valid format: " + str(val))

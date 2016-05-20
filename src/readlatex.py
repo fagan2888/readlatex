@@ -4,6 +4,7 @@ from os.path import exists, basename, dirname, abspath, join
 from shutil import copyfile, copytree, rmtree
 from sys import argv
 from readlatex_engine import *
+from readlatex_params import *
 
 script_location = abspath(argv[0])
 backup_location = join(dirname(script_location), 'backup')
@@ -17,11 +18,13 @@ def readlatex(path):
             addusepackage(path, dogetheight)
             runpdflatex(path)
             restore_original_file(path)
-        positioning(path)
+        positioning(params(), path)
     finally:
         remove('readlatex.sty')
         rmbackups()
 
+def params():
+    return Params()
 
 def addusepackage(path, dogetheight):
     getheight = '[get]' if dogetheight else ''

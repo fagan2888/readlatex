@@ -15,6 +15,8 @@ class Figures:
         self.__figures = figures
 
     def fig_height(self, ref):
+        if ref.label not in self.__figures:
+            raise AssertionError("{value} not in {figs}".format(value=ref.label,figs=self.__figures))
         return self.__figures[ref.label].height
 
     def total_fig_height(self, values):
@@ -110,7 +112,11 @@ class Page:
         return self.__dict__ == other.__dict__
 
     def __iter__(self):
-        return iter(refs)
+        return iter(self.__refs)
+
+    @property
+    def number(self):
+        return self.__pagenumber
 
 class PageResolver:
     def __init__(self, params, height, refs, figs):

@@ -146,13 +146,13 @@ class TestPages(TestLib):
 
     def test_locs_one_page(self):
         actual = get_pages(Params.default, "test/docs/locs_one_page", 1000)
-        expected = { 1 : TestPages.get_page_1(Params.default) }
+        expected = [TestPages.get_page_1(Params.default)]
         self.assertEqual(expected, actual)
 
     def test_locs_two_page(self):
         self.maxDiff = None
         actual = get_pages(Params.default, "test/docs/locs_two_page", 1000)
-        expected = { 1 : TestPages.get_page_1(Params.default), 3 : TestPages.get_page_3() }
+        expected = [TestPages.get_page_1(Params.default), TestPages.get_page_3()]
         self.assertEqual(expected, actual)
 
     def get_page_1(p):
