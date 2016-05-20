@@ -94,13 +94,15 @@ class Page:
         resolver = self.__resolver(figs)
 
         def potential_movement(i):
+            from math import copysign
             delta = resolver.y(i) - resolver.pos(i)
             if delta > 0: # is too high, should be lower
                 direction = -1
             else:
                 direction = 1
-            gapsize = resolver.y(i + direction) - resolver.y(i)
-            gapsize = resolver.h(i) / 2 + resolver.h(i + direction) / 2
+            distance = resolver.y(i + direction) - resolver.y(i)
+            figures_space = resolver.h(i) / 2 + resolver.h(i + direction) / 2
+            gapsize = copysign(abs(distance) - figures_space, distance)
             gapsize *= self.__params.resolution_narrowing
             if abs(gapsize) > abs(delta):
                 # ensure that we don't overshoot
@@ -157,7 +159,7 @@ class PageResolver:
         if i == -1:
             return 0
         if i == self.n:
-            return self.__height
+            return self.height
         return self.ys[i]
 
     def pos(self, i):

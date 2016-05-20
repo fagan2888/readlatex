@@ -8,7 +8,19 @@ from readlatex_calc import *
 import unittest
 from readlatex_params import *
 
-class TestReference(unittest.TestCase):
+class TestLib(unittest.TestCase):
+    def assertAlmostEqual(self, a, b, places=7):
+        if isinstance(a, float):
+            super().assertAlmostEqual(a, b, places=places)
+            return
+        if isinstance(a, list):
+            super().assertEqual(len(a), len(b))
+            for x, y in zip (a, b):
+                super().assertAlmostEqual(x, y, places=places)
+            return
+        raise AssertionError("Incorrect argument types to assertAlmostEqual: " + str(a) + "; " + str(b))
+
+class TestReference(TestLib):
     def test_basic_compare(self):
         a = Reference(Params.default, "abc", 2, 34)
         b = Reference(Params.default, "abc", 2, 24)
@@ -61,7 +73,7 @@ class TestReference(unittest.TestCase):
         self.assertEqual([], page1._Page__refs)
 
 
-class TestRemove(unittest.TestCase):
+class TestRemove(TestLib):
     def test_remove_by_height(self):
         """
         Layout of page
@@ -118,7 +130,27 @@ class TestRemove(unittest.TestCase):
         after = list(page._Page__refs)
         self.assertEqual(before, after)
 
-class TestPages(unittest.TestCase):
+    def test_resolver(self):
+        # see above for layout of page
+        p = Params(penalty_duplication=1000, # get rid of dups
+                    resolution_iterations = 1000 # lots of iterations!
+                    )
+        page1 = TestPages.get_page_1(p)
+        page1._Page__height = 128
+        """
+        Layout afterwards
+        20:     b[60]
+        30:     c[40]
+
+        100:    a[20]
+
+        So they should all be stacked at the bottom under ideal circumstances.
+        """
+        page1.resolve(TestReference.figs)
+        self.assertAlmostEqual([30, 80, 110], [ref.position for ref in page1._Page__refs], places=3)
+
+
+class TestPages(TestLib):
 
     def test_locs_one_page(self):
         actual = get_pages(Params.default, "test/docs/locs_one_page", 1000)
