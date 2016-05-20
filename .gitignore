@@ -3,6 +3,7 @@
 *.aux
 *.out
 eg/*.pdf
+test/docs/*.pdf
 /out
 *.readlatex_heights
 *.readlatex_locations

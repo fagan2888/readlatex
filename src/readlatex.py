@@ -40,7 +40,9 @@ def addusepackage(path, dogetheight):
 
 def runpdflatex(path):
     for _ in range(3):
-        system('pdflatex ' + basename(path))
+        exit = system('pdflatex ' + basename(path))
+        if exit != 0:
+            raise AssertionError("pdflatex returned nonzero result " + str(exit))
 
 def getsty():
     location = join(dirname(script_location), 'readlatex.sty')
