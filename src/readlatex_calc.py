@@ -33,6 +33,9 @@ class Figures:
     def fig_height(self, ref):
         return self.__figures[ref.label].height
 
+    def total_fig_height(self, values):
+        return sum(self.fig_height(ref) for ref in values)
+
 class Reference:
     def __init__(self, params, label, index, position):
         self.__params = params
@@ -71,6 +74,14 @@ class Reference:
     def label(self):
         return self.__label
 
+    @property
+    def position(self):
+        return self.__position
+
+    @position.setter
+    def position(self, pos):
+        self.__position = pos
+
 class Page:
     def __init__(self, params, pagenumber, height):
         self.__params = params
@@ -79,15 +90,38 @@ class Page:
         self.__height = height
 
     def resolve(self, figs):
-        pass
+        self.remove_extras(figs)
+        resolver = self.__resolver(figs)
+
+        def potential_movement(i):
+            delta = resolver.y(i) - resolver.pos(i)
+            if delta > 0: # is too high, should be lower
+                direction = -1
+            else:
+                direction = 1
+            gapsize = resolver.y(i + direction) - resolver.y(i)
+            gapsize = resolver.h(i) / 2 + resolver.h(i + direction) / 2
+            gapsize *= self.__params.resolution_narrowing
+            if abs(gapsize) > abs(delta):
+                # ensure that we don't overshoot
+                gapsize = delta
+            return gapsize
+        for _ in range(self.__params.resolution_iterations):
+            best_i = max(range(resolver.n), key=lambda i: abs(potential_movement(i)) / abs(resolver.y(i) - resolver.pos(i)))
+            resolver.ys[best_i] += potential_movement(best_i)
+        for i in range(resolver.n):
+            self.__refs[i].position = resolver.ys[i]
 
     def remove_extras(self, figs):
         refs_with_removability = sorted(self.__refs, key=lambda ref: ref.removability(figs, self.__refs))
-        fig_height = sum(figs.fig_height(ref) for ref in refs_with_removability)
+        fig_height = figs.total_fig_height(refs_with_removability)
         while fig_height > self.__height:
             ref = refs_with_removability.pop()
             fig_height -= figs.fig_height(ref)
         self.__refs = sorted(refs_with_removability)
+
+    def __resolver(self, figs):
+        return PageResolver(self.__height, self.__refs, figs)
 
     def add(self, label, index, position):
         if not isinstance(position, float):
@@ -101,6 +135,39 @@ class Page:
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
+
+class PageResolver:
+    def __init__(self, height, refs, figs):
+        self.refs = refs
+        self.height = height
+        self.n = len(refs)
+        self.figs = figs
+        total_gap = height - figs.total_fig_height(refs)
+        self.gap = total_gap / (self.n + 1)
+        self.evenly_layout_ys()
+
+    def evenly_layout_ys(self):
+        self.ys = [self.gap]
+        for i in range(1, self.n):
+            self.ys.append(self.y(i - 1) + self.gap + self.h(i-1))
+        for i in range(self.n):
+            self.ys[i] += self.h(i) / 2
+
+    def y(self, i):
+        if i == -1:
+            return 0
+        if i == self.n:
+            return self.__height
+        return self.ys[i]
+
+    def pos(self, i):
+        return self.refs[i].position
+
+    def h(self, i):
+        if i == -1 or i == self.n:
+            return 0
+        return self.figs.fig_height(self.refs[i])
+
 
 def get_pages(params, locations, page_height):
     pages = {}

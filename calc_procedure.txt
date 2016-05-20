@@ -28,5 +28,5 @@ Then, we lay each of the figures out evenly across the entire space as follows:
             Multiply the gap by the gap ratio
             If it overshoots the target, set it to the target
         Calculate the possible movements of all the references.
-        Find the one with the maximum absolute value.
+        Find the one with the maximum absolute value / gapsize.
         Move that picture by that amount.

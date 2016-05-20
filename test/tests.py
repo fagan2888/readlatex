@@ -60,6 +60,8 @@ class TestReference(unittest.TestCase):
         page1.remove_extras(TestReference.figs)
         self.assertEqual([], page1._Page__refs)
 
+
+class TestRemove(unittest.TestCase):
     def test_remove_by_height(self):
         """
         Layout of page
@@ -80,16 +82,7 @@ class TestReference(unittest.TestCase):
         self.assertEqual(page1c._Page__refs, page1._Page__refs)
 
     def test_remove_duplicates(self):
-        """
-        Layout of page
-
-        20:     b[60] a[20]
-        30:     c[40]
-
-        100:    a[20]
-
-        So the biggest
-        """
+        # see above for layout of page
         p = Params(penalty_height=1, penalty_duplication=100000) # all that matters is duplication
         page1 = TestPages.get_page_1(p)
         page1._Page__height = 120
@@ -99,6 +92,31 @@ class TestReference(unittest.TestCase):
         self.assertEqual(len(page1c._Page__refs), len(page1._Page__refs))
         self.assertEqual(page1c._Page__refs, page1._Page__refs)
 
+    def test_initial_layout(self):
+        # see above for layout of page
+        p = Params(penalty_duplication=1000, # get rid of dups
+                    resolution_iterations = 0 # don't actually run resolver
+                    )
+        page1 = TestPages.get_page_1(p)
+        page1._Page__height = 128
+        """
+        Layout afterwards
+        20:     b[60]
+        30:     c[40]
+
+        100:    a[20]
+        """
+        page1.remove_extras(TestReference.figs)
+        ys = page1._Page__resolver(TestReference.figs).ys
+        self.assertEqual([32, 84, 116], ys)
+
+    def test_no_conflict(self):
+        p = Params()
+        page = TestPages.get_no_conflict_page()
+        before = list(page._Page__refs)
+        page.resolve(TestReference.figs)
+        after = list(page._Page__refs)
+        self.assertEqual(before, after)
 
 class TestPages(unittest.TestCase):
 
@@ -131,6 +149,16 @@ class TestPages(unittest.TestCase):
             Reference(Params.default, "a", 5, 30.0)
         ]
         return page3
+
+    def get_no_conflict_page():
+        page = Page(Params(), 1, 1000)
+        page._Page__refs = [
+            ## 0 -- a -- 20 -- b -- 80 -- gap -- 400 -- c -- 440
+            Reference(Params(), "a", 3, 10),
+            Reference(Params(), "b", 2, 50),
+            Reference(Params(), "c", 1, 420)
+        ]
+        return page
 
 if __name__ == '__main__':
     unittest.main()
