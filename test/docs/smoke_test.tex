@@ -1,7 +1,18 @@
 \documentclass{article}
+\usepackage[place]{readlatex}
 \usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage[paperwidth=8.5in]{geometry}
 
 \begin{document}
+
+\begin{center}
+    Title!
+\end{center}
+
+Wall o' text: asdfkakljdsfh
+
+\blindtext
 
 We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
 
@@ -18,6 +29,10 @@ We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
 We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
 
 \pagebreak
-We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}.
+We have Figures~\ref{fig:caption-a} and~\ref{fig:caption-c}. uv
+
+CD \reusefigure[h]{fig:caption-a}
+
+AB
 
 \end{document}

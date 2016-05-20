@@ -14,8 +14,8 @@ def readlatex(path):
         dobackups(path)
         movetopath(path)
         getsty()
-        for dogetheight in True, False:
-            addusepackage(path, dogetheight)
+        for mode in ("", "[get]", "[place]"):
+            addusepackage(path, mode)
             runpdflatex(path)
             restore_original_file(path)
         positioning(params(), path)
@@ -26,14 +26,13 @@ def readlatex(path):
 def params():
     return Params()
 
-def addusepackage(path, dogetheight):
-    getheight = '[get]' if dogetheight else ''
+def addusepackage(path, mode):
     lines = []
     with open(path, 'r') as f:
         for line in f:
             lines.append(line)
             if r'\documentclass' in line:
-                lines.append('\\usepackage' + getheight + '{readlatex}\n')
+                lines.append('\\usepackage' + mode + '{readlatex}\n')
     with open(path, 'w') as f:
         for line in lines:
             f.write(line)

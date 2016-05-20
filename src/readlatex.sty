@@ -6,17 +6,34 @@
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
 \ProvidesPackage{readlatex}
 
-\newif\ifreadlatex@getimageheights@
+\def\EXPANDQUANTITY{1.5}
+\def\IMAGEOFFSET{0.7}
 
+\newif\ifreadlatex@getimageheights@
 \readlatex@getimageheights@false
+
+\newif\ifreadlatex@placeimages@
+\readlatex@placeimages@false
+
+%%% Command from http://tex.stackexchange.com/a/24675/43770, work of http://tex.stackexchange.com/users/5764/werner
+%%%     licensed under https://creativecommons.org/licenses/by-sa/3.0/
+\newcommand{\readlatex@placetextbox}[2]{% \placetextbox{<vertical pos>}{<stuff>}
+  \AddToShipoutPictureFG*{% Add <stuff> to current page foreground
+    \put(\LenToUnit{\IMAGEOFFSET\paperwidth},\LenToUnit{#1}){#2}%
+  }%
+}%
 
 % If option get is passed, get image heights and put them in a file.
 \DeclareOption{get}{\readlatex@getimageheights@true}
+% If option place is passed, place images
+\DeclareOption{place}{\readlatex@placeimages@true}
 \ProcessOptions\relax
 
+\RequirePackage{capt-of}
 \RequirePackage{environ} % to mess with environments
 \RequirePackage{zref-savepos} % to save the position (useful in measuring the height of a figure)
 \RequirePackage{newfile} % to create new files
+\RequirePackage[pscoord]{eso-pic}% The zero point of the coordinate systemis the lower left corner of the page (the default).
 
 % save the old figure, endfigure
 \let\readlatex@figure@old\figure
@@ -67,21 +84,13 @@
 }
 
 \newcommand{\reusefigure}[2][htbp]{%
-    {
-        \addtocounter{figure}{-1}%
-        \ifdef{\theHfigure}{
-            \renewcommand{\theHfigure}{dupe-fig}% If you're using hyperref
-        }{
-                                                % If you're not using hyperref
-        }
-        \renewcommand{\thefigure}{\old@ref{#2}}% Figure counter is \ref
-        \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
-        \renewcommand{\label}[1]{}% Make \label inactive
-        \begin{readlatex@figure@old}[#1]
-            \csname readlatex@savedfigcontent:#2\endcsname
-        \end{readlatex@figure@old}
-    }
+  {\addtocounter{figure}{-1}%
+   \renewcommand{\thefigure}{\ref{#2}}% Figure counter is \ref
+   \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
+   \renewcommand{\label}[1]{}% Make \label inactive
+   \begin{readlatex@figure@old}[#1] \csname readlatex@savedfigcontent:#2\endcsname \end{readlatex@figure@old}}
 }
+
 
 % Keeps track of current number of calls to ypos
 \newcounter{readlatex@ypos@callcount}
@@ -116,6 +125,12 @@
     \openoutputfile{\jobname.readlatex_pageheight}{readlatex@stream@paperheight}
     \addtostream{readlatex@stream@paperheight}{\the\paperheight}
     \closeoutputstream{readlatex@stream@paperheight}
+
+    % \ifreadlatex@placeimages@
+    %     \readlatex@placetextbox{30pt}{
+    %         \reusefigure[h]{fig:caption-a}
+    %     }
+    % \fi
 }
 
 \AtBeginDocument{
@@ -127,6 +142,10 @@
         \readlatex@ypos@setup%
         \addtostream{readlatex@stream@locations}{\readlatex@ypos@value}%
     }
+
+    \ifreadlatex@placeimages@
+        \paperwidth=\EXPANDQUANTITY\dimexpr\the\paperwidth
+    \fi
 }
 
 \endinput
