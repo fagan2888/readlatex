@@ -3,20 +3,24 @@ from os import makedirs, chdir, system, remove
 from os.path import exists, basename, dirname, abspath, join
 from shutil import copyfile, copytree, rmtree
 from sys import argv
+from readlatex_engine import *
 
 script_location = abspath(argv[0])
 backup_location = join(dirname(script_location), 'backup')
 
 def readlatex(path):
-    dobackups(path)
-    movetopath(path)
-    getsty()
-    for dogetheight in True, False:
-        addusepackage(path, dogetheight)
-        runpdflatex(path)
-        restore_original_file(path)
-    remove('readlatex.sty')
-    rmbackups()
+    try:
+        dobackups(path)
+        movetopath(path)
+        getsty()
+        for dogetheight in True, False:
+            addusepackage(path, dogetheight)
+            runpdflatex(path)
+            restore_original_file(path)
+        positioning(path)
+    finally:
+        remove('readlatex.sty')
+        rmbackups()
 
 
 def addusepackage(path, dogetheight):

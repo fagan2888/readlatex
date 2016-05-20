@@ -4,22 +4,13 @@ import os
 
 sys.path.append("src")
 
+from end_to_end_test import *
+from testlib import *
+
 from readlatex_calc import *
 import unittest
 from readlatex_params import *
 from readlatex_engine import *
-
-class TestLib(unittest.TestCase):
-    def assertAlmostEqual(self, a, b, places=7):
-        if isinstance(a, float):
-            super().assertAlmostEqual(a, b, places=places)
-            return
-        if isinstance(a, list):
-            super().assertEqual(len(a), len(b))
-            for x, y in zip (a, b):
-                super().assertAlmostEqual(x, y, places=places)
-            return
-        raise AssertionError("Incorrect argument types to assertAlmostEqual: " + str(a) + "; " + str(b))
 
 class TestReference(TestLib):
     def test_basic_compare(self):
