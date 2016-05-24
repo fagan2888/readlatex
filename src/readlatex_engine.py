@@ -40,7 +40,5 @@ def write_fig_positions(path, pages, figs):
     with open(path, "w") as f:
         for page in pages:
             for ref in page:
-                f.write("%s%s\n" % (HEADER_CRUFT, ref.label))
-                f.write("%s\n" % page.number)
                 pos = ref.position - figs.fig_height(ref) / 2
-                f.write("%s\n" % pos)
+                f.write(r"\reusefigure{%s}{%spt}{%s}%s" % (page.number, pos, ref.label, "\n"))

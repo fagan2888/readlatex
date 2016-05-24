@@ -14,11 +14,14 @@ def readlatex(path):
         dobackups(path)
         movetopath(path)
         getsty()
-        for mode in ("", "[get]", "[place]"):
+        def single_run(mode):
             addusepackage(path, mode)
             runpdflatex(path)
             restore_original_file(path)
+        for mode in ("[get]", ""):
+            single_run(mode)
         positioning(params(), path)
+        single_run("[place]")
     finally:
         remove('readlatex.sty')
         rmbackups()

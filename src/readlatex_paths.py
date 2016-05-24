@@ -10,4 +10,4 @@ def pageheight_path(path):
     return splitext(path)[0] + ".readlatex_pageheight"
 
 def output_path(path):
-    return splitext(path)[0] + ".readlatex_finalpos"
+    return splitext(path)[0] + ".readlatex_output"

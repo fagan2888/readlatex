@@ -7,7 +7,7 @@
 \ProvidesPackage{readlatex}
 
 \def\EXPANDQUANTITY{1.5}
-\def\IMAGEOFFSET{0.7}
+\def\IMAGEOFFSET{0.5}
 
 \newif\ifreadlatex@getimageheights@
 \readlatex@getimageheights@false
@@ -17,9 +17,11 @@
 
 %%% Command from http://tex.stackexchange.com/a/24675/43770, work of http://tex.stackexchange.com/users/5764/werner
 %%%     licensed under https://creativecommons.org/licenses/by-sa/3.0/
-\newcommand{\readlatex@placetextbox}[2]{% \placetextbox{<vertical pos>}{<stuff>}
-  \AddToShipoutPictureFG*{% Add <stuff> to current page foreground
-    \put(\LenToUnit{\IMAGEOFFSET\paperwidth},\LenToUnit{#1}){#2}%
+\newcommand{\readlatex@placetextbox}[3]{% \placetextbox{page}{<vertical pos>}{<stuff>}
+  \AddToShipoutPictureFG{% Add <stuff> to every page foreground
+    \ifthenelse{\equal{#1}{\thepage}}{
+        \put(\LenToUnit{\IMAGEOFFSET\paperwidth},\LenToUnit{#2}){#3}%
+    }{}
   }%
 }%
 
@@ -34,6 +36,7 @@
 \RequirePackage{zref-savepos} % to save the position (useful in measuring the height of a figure)
 \RequirePackage{newfile} % to create new files
 \RequirePackage[pscoord]{eso-pic}% The zero point of the coordinate systemis the lower left corner of the page (the default).
+\RequirePackage{ifthen}
 
 % save the old figure, endfigure
 \let\readlatex@figure@old\figure
@@ -83,12 +86,25 @@
     }
 }
 
-\newcommand{\reusefigure}[2][htbp]{%
-  {\addtocounter{figure}{-1}%
-   \renewcommand{\thefigure}{\ref{#2}}% Figure counter is \ref
-   \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
-   \renewcommand{\label}[1]{}% Make \label inactive
-   \begin{readlatex@figure@old}[#1] \csname readlatex@savedfigcontent:#2\endcsname \end{readlatex@figure@old}}
+
+%%% From answer http://tex.stackexchange.com/a/310734/43770
+%%% Work of http://tex.stackexchange.com/users/5764/werner, licensed under https://creativecommons.org/licenses/by-sa/3.0/
+\global\let\oldcaption\caption
+\newcommand{\fakefigure}[2]{%
+    \renewcommand{\label}[1]{}
+    \addtocounter{figure}{-1}
+    \renewcommand{\thefigure}{\old@ref{#1}}% Figure counter is \ref
+    \begin{minipage}{\textwidth}
+        \renewcommand\caption{\def\@captype{figure}\oldcaption}% modified from capt-of
+    #2
+\end{minipage}%
+}
+
+\newcommand{\reusefigure}[3]{%
+
+    \readlatex@placetextbox{#1}{#2}{
+        \fakefigure{#3}{\csname readlatex@savedfigcontent:#3\endcsname}
+    }
 }
 
 
@@ -126,11 +142,9 @@
     \addtostream{readlatex@stream@paperheight}{\the\paperheight}
     \closeoutputstream{readlatex@stream@paperheight}
 
-    % \ifreadlatex@placeimages@
-    %     \readlatex@placetextbox{30pt}{
-    %         \reusefigure[h]{fig:caption-a}
-    %     }
-    % \fi
+    \ifreadlatex@placeimages@
+        \input{\jobname.readlatex_output}
+    \fi
 }
 
 \AtBeginDocument{
